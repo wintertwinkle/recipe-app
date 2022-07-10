@@ -1,112 +1,120 @@
 <template>
 <div class="home">
-    <h1>My recipes</h1>
-    <button @click="togglePopup">Add new Recipe</button>
+    <h1>我的菜谱</h1>
+    <button @click="togglePopup">添加新的菜谱</button>
     <div class="recipes">
         <!-- Recipes to go here -->
         <div class="card" v-for="recipe in $store.state.recipes" :key="recipe.slug">
             <h2>{{ recipe.title }}</h2>
             <p>{{ recipe.description }}</p>
             <router-link :to="`/recipe/${recipe.slug}`">
-                <button>View Recipe</button>
+                <button>查看菜谱</button>   
             </router-link>
+            <button class="delete_btn" @click="deleteRecipe(recipe.slug)">删除菜谱</button>
         </div>
     </div>
 
     <div class="add-recipe-popup" v-if="popupOpen">
         <div class="popup-content">
-            <h2>Add new Recipe</h2>
+            <h2>新菜谱</h2>
             <form @submit.prevent="addNewRecipe">
                 <div class="group">
-                    <label>Title</label>
+                    <label>菜名</label>
                     <input type="text" v-model="newRecipe.title">
                 </div>
                 <div class="group">
-                    <label>Description</label>
+                    <label>描述</label>
                     <textarea v-model="newRecipe.description"></textarea>
                 </div>
                 <div class="group">
-                    <label>Ingredients</label>
+                    <label>原料</label>
                     <div class="ingredient" v-for="index in newRecipe.ingredientCounts" :key="index">
-                        <input type="text" v-model="newRecipe.ingredients[index - 1]"/>
+                        <input type="text" v-model="newRecipe.ingredients[index-1]"/>
+                        <span class="iconfont icon-delete delete" @click="deleteIngredient(index - 1)"></span>
                     </div>
-                    <button type="button" @click="addNewIngredient">Add Ingredient</button>
+                    <button type="button" @click="addNewIngredient">添加原料</button>
                 </div>
 
                 <div class="group">
-                    <label>Method</label>
+                    <label>步骤</label>
                     <div class="method" v-for="index in newRecipe.methodCounts" :key="index">
                         <textarea v-model="newRecipe.methods[index-1]"></textarea>
+                        <span class="iconfont icon-delete delete" @click="deleteMethod(index - 1)"></span>
                     </div>
-                    <button type="button" @click="addNewMethod">Add step</button>
+                    <button type="button" @click="addNewMethod">添加步骤</button>
                 </div>
-                <button type="submit">Add recipe</button>
-                <button type="close" @click="togglePopup">Close</button>
+                <button type="submit">添加新菜谱</button>
+                <button type="close" @click="togglePopup">关闭</button>
             </form>
         </div>
     </div>
 </div> 
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { useStore } from 'vuex'
 
-export default {
-    name: "Home",
-    setup() {
-        const newRecipe = ref({
-            title: '',
-            description: '',
-            ingredients: [],
-            methods: [],
-            ingredientCounts: 1,
-            methodCounts: 1
-        })
-        const popupOpen = ref(false)
-        const store = useStore()
+const newRecipe = ref({
+    title: '',
+    description: '',
+    ingredients: [],
+    methods: [],
+    ingredientCounts: 1,
+    methodCounts: 1
+})
 
-        const togglePopup = () => popupOpen.value = !popupOpen.value
+const popupOpen = ref(false)
+const store = useStore()
 
-        const addNewIngredient = () => {
-            newRecipe.value.ingredientCounts++
-        }
+function togglePopup() {
+    popupOpen.value = !popupOpen.value
+}
 
-        const addNewMethod = () => {
-            newRecipe.value.methodCounts++
-        }
 
-        const addNewRecipe = () => {
-            newRecipe.value.slug = newRecipe.value.title.toLowerCase().replace(/\s/g, '-')
+function addNewIngredient() {
+    newRecipe.value.ingredientCounts++
+}
 
-            if (!newRecipe.value.slug) {
-                alert("Please enter a title")
-                return
-            }
+function deleteIngredient(index) {
+    newRecipe.value.ingredients.splice(index, 1)
+    newRecipe.value.ingredientCounts--
+    
+}
 
-            store.commit("ADD_RECIPE", { ...newRecipe.value })
+function addNewMethod() {
+    newRecipe.value.methodCounts++
+}
 
-            newRecipe.value = {
-                title: '',
-                description: '',
-                ingredients: [],
-                methods: [],
-                ingredientCounts: 1,
-                methodCounts: 1
-            }
+function deleteMethod(index) {
+    newRecipe.value.methods.splice(index, 1)
+    newRecipe.value.methodCounts--
+}
 
-            togglePopup()
-        }
+function addNewRecipe() {
+    newRecipe.value.slug = newRecipe.value.title.toLowerCase().replace(/\s/g, '-')
 
-        return {
-            newRecipe,
-            popupOpen,
-            togglePopup,
-            addNewIngredient,
-            addNewMethod,
-            addNewRecipe
-        }
+    if (!newRecipe.value.slug) {
+        alert("Please enter a title")
+        return
     }
+
+    store.commit("ADD_RECIPE", { ...newRecipe.value })
+
+    newRecipe.value = {
+        title: '',
+        description: '',
+        ingredients: [],
+        methods: [],
+        ingredientCounts: 1,
+        methodCounts: 1
+    }
+
+    togglePopup()
+}
+
+function deleteRecipe(slug) {
+    store.commit("DELETE_RECIPE", slug)
 }
 </script>
 
@@ -159,11 +167,13 @@ h1 {
 }
 
 .add-recipe-popup .popup-content {
-    background-color: #081c33;
-    padding: 2rem;
-    border-radius: 1rem;
     width: 100%;
     max-width: 768px;
+    height: 80%;
+    padding: 2rem;
+    border-radius: 1rem;
+    background-color: #081c33;
+    overflow: scroll;
 }
 
 .popup-content h2 {
@@ -197,5 +207,29 @@ h1 {
 
 .popup-content button[type="submit"] {
     margin-right: 1rem;
+}
+
+
+.ingredient {
+    position: relative;
+}
+
+.method {
+    position: relative;
+}
+
+.delete {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: red;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.delete_btn {
+    background-color: lightsalmon;
+    float: right;
 }
 </style>

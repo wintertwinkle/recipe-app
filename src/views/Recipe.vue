@@ -1,11 +1,13 @@
 <template>
     <div class="recipe">
-        <router-link to="/">&lt; Back</router-link>
+        <router-link to="/">
+            <button>&lt; 返回</button>
+        </router-link>
         <h1>{{ recipe.title }}</h1>
         <p class="desc">{{ recipe.description }}</p>
         <hr>
         <div class="ingredients">
-            <h3>Ingredients</h3>
+            <h3>原料</h3>
             <ul>
                 <li v-for="(ingredient, i) in recipe.ingredients" :key="i">
                     {{ ingredient }}
@@ -13,7 +15,7 @@
             </ul>
         </div>
         <div class="methods">
-            <h3>Method</h3>
+            <h3>步骤</h3>
             <ol>
                 <li v-for="(method, i) in recipe.methods" :key="i">
                     {{ method }}
@@ -50,6 +52,11 @@ export default {
 
 hr {
     margin-bottom: 1rem;
+}
+
+h1 {
+    margin-top: 1rem;
+    text-align: center;
 }
 
 h3 {
